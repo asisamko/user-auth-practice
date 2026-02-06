@@ -42,6 +42,7 @@ export const auth = new Elysia({prefix: "/auth"})
     })
 
 
+    // login endpoint
     .post("/login", async ({body}) => {
         // Get user
         let user = await database.user.findFirst({
@@ -50,7 +51,6 @@ export const auth = new Elysia({prefix: "/auth"})
             }
         })
 
-        // Check if user exists
         if (!user) {
             return {
                 status: "error",
@@ -58,7 +58,7 @@ export const auth = new Elysia({prefix: "/auth"})
             }
         }
 
-        // Validate password
+        // compare entered password in db and enetered password
         const isPasswordCorrect = await bcrypt.compare(body.password, user.password)
         if (!isPasswordCorrect) {
             return {
@@ -67,8 +67,7 @@ export const auth = new Elysia({prefix: "/auth"})
             }
         }
 
-
-        // Create new token
+        // updates user's token in db
         user = await database.user.update({
             where: {
                 id: user.id
@@ -78,12 +77,51 @@ export const auth = new Elysia({prefix: "/auth"})
             }
         })
 
-
-        // Return user and token
+        // return token and username
         return {
             user: userDTO(user),
-            token: user.token // <-- send updated token
+            token: user.token
         }
     }, {
         body: loginBody
+    })
+
+    .post("/logout", async ({headers}) => {
+        const authHeader = headers.authorization;
+
+        if (!authHeader) {
+            return {
+                status: "error",
+                message: "Authorization header missing"
+            }
+        }
+
+        const token = authHeader.substring(7)
+
+        const user = await database.user.findFirst({
+            where: {
+                token: token
+            }
+        })
+
+        if (!user) {
+            return {
+                status: "error",
+                message: "Unauthorized"
+            }
+        }
+
+        await database.user.update({
+            where: {
+                id: user.id
+            },
+            data: {
+                token: null
+            }
+        })
+
+        return {
+            status: "success",
+            message: "Logout successful"
+        }
     })

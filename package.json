@@ -6,9 +6,13 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "bcrypt": "^6.0.0",
     "elysia": "latest"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "bun-types": "latest"
   },
   "module": "src/index.js"

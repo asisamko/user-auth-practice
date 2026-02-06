@@ -6,6 +6,7 @@ import crypto from "crypto"
 
 import { registerBody, loginBody } from "./model";
 import { userDTO } from "./dto/user";
+import { authentificateMiddleware } from "./middlewares/authentificate";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
 const database = new PrismaClient({ adapter })
@@ -86,30 +87,8 @@ export const auth = new Elysia({prefix: "/auth"})
         body: loginBody
     })
 
-    .post("/logout", async ({headers}) => {
-        const authHeader = headers.authorization;
-
-        if (!authHeader) {
-            return {
-                status: "error",
-                message: "Authorization header missing"
-            }
-        }
-
-        const token = authHeader.substring(7)
-
-        const user = await database.user.findFirst({
-            where: {
-                token: token
-            }
-        })
-
-        if (!user) {
-            return {
-                status: "error",
-                message: "Unauthorized"
-            }
-        }
+    .use(authentificateMiddleware)
+    .post("/logout", async ({user}) => {
 
         await database.user.update({
             where: {
@@ -126,30 +105,8 @@ export const auth = new Elysia({prefix: "/auth"})
         }
     })
 
-    .get("/profile", async ({headers}) => {
-        const authHeader = headers.authorization;
-
-        if (!authHeader) {
-            return {
-                status: "error",
-                message: "Authorization header missing"
-            }
-        }
-
-        const token = authHeader.substring(7)
-
-        const user = await database.user.findFirst({
-            where: {
-                token: token
-            }
-        })
-
-        if (!user) {
-            return {
-                status: "error",
-                message: "Unauthorized"
-            }
-        }
+    .use(authentificateMiddleware)
+    .get("/profile", async ({user}) => {
 
         return {
             user: userDTO(user)

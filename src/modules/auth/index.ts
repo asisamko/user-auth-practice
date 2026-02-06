@@ -125,3 +125,33 @@ export const auth = new Elysia({prefix: "/auth"})
             message: "Logout successful"
         }
     })
+
+    .get("/profile", async ({headers}) => {
+        const authHeader = headers.authorization;
+
+        if (!authHeader) {
+            return {
+                status: "error",
+                message: "Authorization header missing"
+            }
+        }
+
+        const token = authHeader.substring(7)
+
+        const user = await database.user.findFirst({
+            where: {
+                token: token
+            }
+        })
+
+        if (!user) {
+            return {
+                status: "error",
+                message: "Unauthorized"
+            }
+        }
+
+        return {
+            user: userDTO(user)
+        }
+    })

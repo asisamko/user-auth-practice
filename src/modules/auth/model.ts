@@ -9,6 +9,9 @@ export const registerBody = t.Object({
         minLength: 3,
         maxLength: 120
     }),
+    email: t.String({
+        format: "email"
+    })
 })
 
 export const loginBody = t.Object({

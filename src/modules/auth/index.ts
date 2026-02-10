@@ -32,12 +32,10 @@ export const auth = new Elysia({prefix: "/auth"})
             data: {
                 username: body.username,
                 password: hashedPasswrd,
-                email: body.email,
                 token: crypto.randomBytes(64).toString('base64url')
             }
         })
         return {
-            status: "success",
             user: userDTO(user),
             token: user.token}
     }, {
@@ -82,7 +80,6 @@ export const auth = new Elysia({prefix: "/auth"})
 
         // return token and username
         return {
-            status: "success",
             user: userDTO(user),
             token: user.token
         }
@@ -105,5 +102,13 @@ export const auth = new Elysia({prefix: "/auth"})
         return {
             status: "success",
             message: "Logout successful"
+        }
+    })
+
+    .use(authentificateMiddleware)
+    .get("/profile", async ({user}) => {
+
+        return {
+            user: userDTO(user)
         }
     })

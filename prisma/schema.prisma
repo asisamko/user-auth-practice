@@ -1,83 +1,24 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
 generator client {
   provider = "prisma-client"
-  output = "../src/generated/prisma"
+  output   = "../src/generated/prisma"
   binaryTargets = ["native", "darwin-arm64"]
 }
-
 
 datasource db {
   provider = "postgresql"
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  token     String?  @unique
-  username  String
-  createdAt DateTime @default(now())
-
-  chats     ChatMember[]
-  messages  Message[]
-  reactions Reaction[]
-}
-
-model Chat {
-  id        String   @id @default(uuid())
-  chatName  String
+  id Int @id @default(autoincrement())
+  username String @unique
+  password String
+  token String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  members   ChatMember[]
-  messages  Message[]
-}
-
-model ChatMember {
-  id     String @id @default(uuid())
-  chatId String
-  userId Int
-
-  chat Chat @relation(fields: [chatId], references: [id])
-  user User @relation(fields: [userId], references: [id])
-
-  @@unique([userId, chatId])
-}
-
-model Message {
-  id        Int      @id @default(autoincrement())
-  content   String
-  createdAt DateTime @default(now())
-  
-  chatId    String
-  chat      Chat     @relation(fields: [chatId], references: [id])
-  
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-
-  // Threading pre odpovede
-  parentId      Int?
-  parentMessage Message?  @relation("Thread", fields: [parentId], references: [id])
-  replies       Message[] @relation("Thread")
-
-  reactions Reaction[]
-}
-
-model Emoji {
-  id        Int        @id @default(autoincrement())
-  code      String     @unique
-  char      String
-  reactions Reaction[]
-}
-
-model Reaction {
-  id        String @id @default(uuid())
-  messageId Int
-  userId    Int
-  emojiId   Int
-
-  message Message @relation(fields: [messageId], references: [id])
-  user    User    @relation(fields: [userId], references: [id])
-  emoji   Emoji   @relation(fields: [emojiId], references: [id])
-
-  @@unique([messageId, userId, emojiId]) // Zabezpečí, že jeden user dá jeden typ emoji správe len raz
 }
